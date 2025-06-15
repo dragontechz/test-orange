@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"stream/utils"
 )
@@ -9,7 +10,7 @@ import (
 const (
 	start    = "Bytes1"
 	end      = "Bytes0"
-	BUFFSIZE = 1080 * 5
+	BUFFSIZE = 1080 * 50
 	mask     = "HTTP/1.1 200 Bytes1%sBytes0\r\n\r\n"
 )
 
@@ -60,14 +61,17 @@ func read_resp(conn net.Conn, channel chan string) {
 		}
 		conn_read := string(buffer[:n])
 
-		data := utils.GET(conn_read, start, end)
+		data, err := utils.GET(conn_read, start, end)
+		if err != nil {
+			log.Printf("Erreur: %v", err)
+		}
 		channel <- data
 
 	}
 }
 func read_req(conn net.Conn, channel chan string) {
 	fmt.Println("reding req")
-	buffer := make([]byte, BUFFSIZE/2)
+	buffer := make([]byte, BUFFSIZE)
 	for {
 		n, err := conn.Read(buffer)
 		if err != nil {

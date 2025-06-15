@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"stream/utils"
 )
@@ -9,7 +10,7 @@ import (
 const (
 	start    = "Bytes1"
 	end      = "Bytes0"
-	BUFFSIZE = 5800 * 2
+	BUFFSIZE = 1080 * 50
 	mask     = "HTTP/1.1 200 Bytes1%sBytes0\r\n\r\n"
 )
 
@@ -19,8 +20,8 @@ func main() {
 	if err != nil {
 		fmt.Printf("error in listeningg %v\n", err)
 	}
-	proxy := utils.Proxy{Listening_Port: ":8080"}
-	go proxy.Run()
+	proxy := utils.SOCKS5{Listn_addr: ":8080"}
+	go proxy.RUN_v5()
 
 	for {
 		conn, err := listener.Accept()
@@ -64,13 +65,17 @@ func read_req(conn net.Conn, channel chan string) {
 		conn_read := string(buffer[:n])
 		fmt.Println("from read req: ", conn_read)
 
-		data := utils.GET(conn_read, start, end)
+		data, err := utils.GET(conn_read, start, end)
+		if err != nil {
+			log.Printf("Erreur: %v", err)
+		}
+
 		channel <- data
 
 	}
 }
 func read_resp(conn net.Conn, channel chan string) {
-	buffer := make([]byte, BUFFSIZE/2)
+	buffer := make([]byte, BUFFSIZE)
 	for {
 		n, err := conn.Read(buffer)
 		if err != nil {

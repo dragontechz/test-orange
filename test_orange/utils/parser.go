@@ -15,13 +15,26 @@ func main() {
 
 }
 
-func GET(data, start, end string) string {
-	start_index := strings.Index(data, start) + len(start)
-	end_index := strings.Index(data, end)
-	resp := data[start_index:end_index]
-	return resp
-}
+func GET(data, start, end string) (string, error) {
+	startIndex := strings.Index(data, start)
+	if startIndex == -1 {
+		return "", fmt.Errorf("délimiteur de début '%s' non trouvé", start)
+	}
+	startIndex += len(start) // On se place après le délimiteur
 
+	endIndex := strings.Index(data[startIndex:], end)
+	if endIndex == -1 {
+		return "", fmt.Errorf("délimiteur de fin '%s' non trouvé", end)
+	}
+	endIndex += startIndex // Ajuste l'indice par rapport à la chaîne complète
+
+	// Vérifie que les indices sont valides
+	if startIndex > endIndex || endIndex > len(data) {
+		return "", fmt.Errorf("indices invalides (start=%d, end=%d)", startIndex, endIndex)
+	}
+
+	return data[startIndex:endIndex], nil
+}
 func Insert(data, input, start, end string) string {
 	start_index := strings.Index(data, start) + len(start)
 	end_index := strings.Index(data, end)
